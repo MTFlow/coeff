@@ -64,6 +64,9 @@ int main(int narg, char **arg)
 	data = 1;
 	STRflag = 0;
 	vflag = 0;
+	nflag = 0;
+	NATOMS = 0;
+	SBYTES = 0;
 
 	lineD = new char[91];
 	strcpy(lineD,"==========================================================================================");
@@ -174,6 +177,12 @@ int main(int narg, char **arg)
 		} else if ( strcmp(arg[iarg],"-vflag") == 0 ) {
 			if (iarg+2 > narg) {fprintf(screen,"Missing argument value of '%s'\n",arg[iarg]); return 1;}
 			vflag = atoi(arg[iarg+1]);
+			iarg += 2;
+		} else if ( strcmp(arg[iarg],"-natoms") == 0 ) {
+			if (iarg+2 > narg) {fprintf(screen,"Missing argument value of '%s'\n",arg[iarg]); return 1;}
+			nflag = 1;
+			NATOMS = atoi(arg[iarg+1]);
+			SBYTES = NATOMS;
 			iarg += 2;
 //		} else if ( strcmp(arg[iarg],"-threads") == 0 ) {
 //			if (iarg+2 > narg) {fprintf(screen,"Missing argument value of '%s'\n",arg[iarg]); return 1;}
@@ -286,9 +295,9 @@ int main(int narg, char **arg)
 
 	fprintf(screen,"%s\n",lineD);
 
-	int NATOMS = 0;
-	int SBYTES = 0;
 	int step = 0;
+
+	if (!nflag) {
 
 	fprintf(screen,"\nFind largest molecule ID and number of atoms\nTime steps: ");
 
@@ -362,6 +371,7 @@ int main(int narg, char **arg)
 		};
 
 	};//end of while
+	};
 
 	fprintf(screen,"\nLargest molecule ID: %d\n",SBYTES);
 	fprintf(screen,"Number of atoms: %d\n\n",NATOMS);

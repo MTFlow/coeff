@@ -67,8 +67,10 @@ FILE *screen = stdout;
 FILE *error = stderr;
 FILE *fpdatvel = NULL;
 
+int NATOMS,SBYTES;
+
 int imass,imol,iid,itype,ix,iy,iz,ivx,ivy,ivz,ike,ipe,is1,is2,is3,is4,is5,is6;
-int STRflag,output_every_flag;
+int STRflag,output_every_flag,nflag;
 int start,stop,N,output,step_size,threads,iV,output_every;
 double LB_start,LB_stop,iLB,VB_start,VB_stop,iVB,vmin,vmax;
 //double *coord = NULL;
