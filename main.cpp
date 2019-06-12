@@ -257,19 +257,12 @@ int main(int narg, char **arg)
 	
 	};
 
-	int test = open(arg[1],O_RDONLY,0);
-	assert(test != -1);
 
-	size_t filesize = getFilesize(arg[1]);
-
-	void* mmappeddata = mmap(NULL, filesize, PROT_READ, MAP_PRIVATE | MAP_POPULATE, test, 0);
-	assert(mmappeddata != MAP_FAILED);
-
-//	FILE *fp = fopen(arg[1],"rb");
-//	if (fp == NULL) {
-//		perror("Error opening file");
-//		return 1;
-//	};
+	FILE *fp = fopen(arg[1],"rb");
+	if (fp == NULL) {
+		perror("Error opening file");
+		return 1;
+	};
 
 	fprintf(screen,"\n%s\n",lineD);
 	fprintf(screen,"ATOM DATA");
@@ -313,72 +306,6 @@ int main(int narg, char **arg)
 
 	fprintf(screen,"\nFind largest molecule ID and number of atoms\nTime steps: ");
 
-	while(1) {
-
-		read(test,&ntimestep,sizeof(bigint));
-//		fprintf(screen," " BIGINT_FORMAT, ntimestep);
-
-		if ((step%output_every)==0) fprintf(screen," " BIGINT_FORMAT, ntimestep);
-		fflush(stdout);		
-		step += step_size;
-			
-		read(test,&natoms,sizeof(bigint));		
-		read(test,&triclinic,sizeof(int));		
-		read(test,&boundary[0][0],6*sizeof(int));	
-    read(test,&xlo,sizeof(double));
-    read(test,&xhi,sizeof(double));
- 	  read(test,&ylo,sizeof(double));
-    read(test,&yhi,sizeof(double));
-    read(test,&zlo,sizeof(double));
-    read(test,&zhi,sizeof(double));
-    if (triclinic) {
-			read(test,&xy,sizeof(double));
-			read(test,&xz,sizeof(double));
-			read(test,&yz,sizeof(double));
-    }
-    read(test,&size_one,sizeof(int));
-    read(test,&nchunk,sizeof(int));
-	
-//		if (natoms > NATOMS) NATOMS = natoms;
-		if (ntimestep >= start && ntimestep <= stop) {
-
-		for (int i = 0; i < nchunk; i++) {
-			read(test,&n,sizeof(int));				
-
-			if (n > maxbuf) {
-				if (buf) delete [] buf;
-				buf = new double[n];
-				maxbuf = n;
-			}
-
-			read(test,buf,sizeof(double)*n);
-				
-//			for (int S = 0; S < n/size_one; S++) {
-//				if (buf[iid+size_one*S]>SBYTES) SBYTES = buf[iid+size_one*S];
-//			};
-			};
-		} else {
-			break;
-
-		};//if(ntimestep)
-		};//end of while
-	};//if(nflag)
-
-	fprintf(screen,"\nLargest molecule ID: %d\n",SBYTES);
-	fprintf(screen,"Number of atoms: %d\n\n",NATOMS);
-
-	int rc = munmap(mmappeddata, filesize);
-	assert(rc == 0);
-	close(test);
-
-
-
-
-
-
-
-
-/*
 	while(1) {
 
 		fread(&ntimestep,sizeof(bigint),1,fp);	
@@ -756,7 +683,7 @@ int main(int narg, char **arg)
 
 	}; // end for loop LB_start
 
-*/
+
 	if (buf) delete [] buf;
 	if (vel_Jout) delete [] vel_Jout;
 	if (vel_Jcoll) delete [] vel_Jcoll;
@@ -777,8 +704,8 @@ int main(int narg, char **arg)
 
 	delete [] JL;
 
-//	fclose(fpdatcoeff);
-//	fclose(fpfluxtime);
+	fclose(fpdatcoeff);
+	fclose(fpfluxtime);
 
 	return 0;
 
