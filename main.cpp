@@ -1,4 +1,6 @@
 #include <stdio.h>
+#include <sys/mman.h>
+#include <fcntl.h>
 #include <string.h>
 #include <iostream>
 #include <sys/stat.h>
@@ -9,6 +11,7 @@
 #include "stdlib.h"
 #include "math.h"
 #include <cassert>
+#include "assert.h"
 #include <cmath>
 #include <vector>
 #include <algorithm>
@@ -254,11 +257,19 @@ int main(int narg, char **arg)
 	
 	};
 
-	FILE *fp = fopen(arg[1],"rb");
-	if (fp == NULL) {
-		perror("Error opening file");
-		return 1;
-	};
+	int test = open(arg[1],O_RDONLY,0);
+	assert(test != -1);
+
+	size_t filesize = getFilesize(arg[1]);
+
+	void* mmappeddata = mmap(NULL, filesize, PROT_READ, MAP_PRIVATE | MAP_POPULATE, test, 0);
+	assert(mmappeddata != MAP_FAILED);
+
+//	FILE *fp = fopen(arg[1],"rb");
+//	if (fp == NULL) {
+//		perror("Error opening file");
+//		return 1;
+//	};
 
 	fprintf(screen,"\n%s\n",lineD);
 	fprintf(screen,"ATOM DATA");
@@ -282,8 +293,8 @@ int main(int narg, char **arg)
 	fprintf(screen,"%-25s%-25s%.4f\n","Liquid bnd start","-LB_start",LB_start);
 	fprintf(screen,"%-25s%-25s%.4f\n","Liquid bnd stop","-LB_stop",LB_stop);
 	fprintf(screen,"%-25s%-25s%.4f\n","Liquid bnd step","-iLB",iLB);
-	fprintf(screen,"%-25s%-25s%.4f\n","Vapor bnd start","-LB_start",VB_start);
-	fprintf(screen,"%-25s%-25s%.4f\n","Vapor bnd stop","-LB_stop",VB_stop);
+	fprintf(screen,"%-25s%-25s%.4f\n","Vapor bnd start","-VB_start",VB_start);
+	fprintf(screen,"%-25s%-25s%.4f\n","Vapor bnd stop","-VB_stop",VB_stop);
 	fprintf(screen,"%-25s%-25s%.4f\n","Vapor bnd step","-iVB",iVB);
 	fprintf(screen,"%-25s%-25s%s\n","String","-string",STR);
 	fprintf(screen,"%-25s%-25s%d\n","Data","-data",data);
@@ -291,6 +302,7 @@ int main(int narg, char **arg)
 	if (vflag) fprintf(screen,"%-25s%-25s%f\n","vmin","-vmin",vmin);
 	if (vflag) fprintf(screen,"%-25s%-25s%f\n","vmax","-vmax",vmax);
 	if (vflag) fprintf(screen,"%-25s%-25s%d\n","Velocity step","-iV",iV);
+	if (nflag) fprintf(screen,"%-25s%-25s%d\n","Number of atoms","-natoms",NATOMS);
 
 
 	fprintf(screen,"%s\n",lineD);
@@ -301,6 +313,72 @@ int main(int narg, char **arg)
 
 	fprintf(screen,"\nFind largest molecule ID and number of atoms\nTime steps: ");
 
+	while(1) {
+
+		read(test,&ntimestep,sizeof(bigint));
+//		fprintf(screen," " BIGINT_FORMAT, ntimestep);
+
+		if ((step%output_every)==0) fprintf(screen," " BIGINT_FORMAT, ntimestep);
+		fflush(stdout);		
+		step += step_size;
+			
+		read(test,&natoms,sizeof(bigint));		
+		read(test,&triclinic,sizeof(int));		
+		read(test,&boundary[0][0],6*sizeof(int));	
+    read(test,&xlo,sizeof(double));
+    read(test,&xhi,sizeof(double));
+ 	  read(test,&ylo,sizeof(double));
+    read(test,&yhi,sizeof(double));
+    read(test,&zlo,sizeof(double));
+    read(test,&zhi,sizeof(double));
+    if (triclinic) {
+			read(test,&xy,sizeof(double));
+			read(test,&xz,sizeof(double));
+			read(test,&yz,sizeof(double));
+    }
+    read(test,&size_one,sizeof(int));
+    read(test,&nchunk,sizeof(int));
+	
+//		if (natoms > NATOMS) NATOMS = natoms;
+		if (ntimestep >= start && ntimestep <= stop) {
+
+		for (int i = 0; i < nchunk; i++) {
+			read(test,&n,sizeof(int));				
+
+			if (n > maxbuf) {
+				if (buf) delete [] buf;
+				buf = new double[n];
+				maxbuf = n;
+			}
+
+			read(test,buf,sizeof(double)*n);
+				
+//			for (int S = 0; S < n/size_one; S++) {
+//				if (buf[iid+size_one*S]>SBYTES) SBYTES = buf[iid+size_one*S];
+//			};
+			};
+		} else {
+			break;
+
+		};//if(ntimestep)
+		};//end of while
+	};//if(nflag)
+
+	fprintf(screen,"\nLargest molecule ID: %d\n",SBYTES);
+	fprintf(screen,"Number of atoms: %d\n\n",NATOMS);
+
+	int rc = munmap(mmappeddata, filesize);
+	assert(rc == 0);
+	close(test);
+
+
+
+
+
+
+
+
+/*
 	while(1) {
 
 		fread(&ntimestep,sizeof(bigint),1,fp);	
@@ -376,6 +454,7 @@ int main(int narg, char **arg)
 	fprintf(screen,"\nLargest molecule ID: %d\n",SBYTES);
 	fprintf(screen,"Number of atoms: %d\n\n",NATOMS);
 
+
 //	int NATOMS = SBYTES;	
 //	SBYTES = 10000000;
 
@@ -423,8 +502,6 @@ int main(int narg, char **arg)
 	delete [] filename1;
 
 	fprintf(fpdatcoeff,"Liquid_bnd Vapor_bnd L_Jevap L_Jout L_Jevap/Jout L_Jcond L_Jcoll L_Jcond/Jcoll\n");
-
-	fseek(fp,0,SEEK_SET);
 
 	JL = new int[4];
 
@@ -679,7 +756,7 @@ int main(int narg, char **arg)
 
 	}; // end for loop LB_start
 
-
+*/
 	if (buf) delete [] buf;
 	if (vel_Jout) delete [] vel_Jout;
 	if (vel_Jcoll) delete [] vel_Jcoll;
@@ -700,8 +777,8 @@ int main(int narg, char **arg)
 
 	delete [] JL;
 
-	fclose(fpdatcoeff);
-	fclose(fpfluxtime);
+//	fclose(fpdatcoeff);
+//	fclose(fpfluxtime);
 
 	return 0;
 

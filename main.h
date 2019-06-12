@@ -24,6 +24,12 @@ typedef int64_t bigint;
 #endif
 
 
+size_t getFilesize(const char* filename) {
+    struct stat st;
+    stat(filename, &st);
+    return st.st_size;
+}
+
 inline bool fexists (const std::string& name) {
   struct stat buffer;   
   return (stat (name.c_str(), &buffer) == 0); 
