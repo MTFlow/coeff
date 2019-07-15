@@ -91,6 +91,7 @@ void flux(int S, double *Left_bnd)
 //			}
 	} else {
 			JL[2]++;
+			fprintf(fpposition,"%d %E\n",id,z);
 			if (vflag) {
 				vel_Jcoll[iVX] += 1.0;
 				vel_Jcoll[iVY+iV] += 1.0;

@@ -72,6 +72,7 @@ int *JL = NULL;
 FILE *screen = stdout;
 FILE *error = stderr;
 FILE *fpdatvel = NULL;
+FILE *fpposition = NULL;
 
 int NATOMS,SBYTES;
 

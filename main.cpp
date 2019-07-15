@@ -421,6 +421,8 @@ int main(int narg, char **arg)
 
 	FILE *fpfluxtime = fopen(filename1,"w");
 
+	FILE *fpposiiton = fopen("position.txt","w");
+
 	fprintf(screen,"Created output file(s):\n");
 	fprintf(screen,"> %s\n",filename);
 	fprintf(screen,"> %s\n",filename1);
