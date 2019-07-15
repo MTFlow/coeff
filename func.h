@@ -5,6 +5,7 @@ void flux(int S, double *Left_bnd)
 
 	int id = buf[iid+size_one*S];
 	double z = buf[iz+size_one*S];
+	double dz = 20.0;
 	
 	double z_left[4] = {Left_bnd[0] + 10.0, Left_bnd[1] - 10.0, 
 											Left_bnd[2] + 10.0, Left_bnd[3] - 10.0};
@@ -41,6 +42,7 @@ void flux(int S, double *Left_bnd)
 //			}
 		} else {
 //		if (JoutL_oldlist[id] != sign_outL) {
+				if (z < Left_bnd[3]+dz) {
 				JL[3]++;
 				if (vflag) {
 					vel_Jout[iVX] += 1.0;
@@ -55,6 +57,7 @@ void flux(int S, double *Left_bnd)
 						vel_Jevap[iVY+iV] += 1.0;
 						vel_Jevap[iVZ+2*iV] += 1.0;
 					};
+				};
 				};
 		}
 	} else if (z < Left_bnd[3]) {
@@ -90,12 +93,14 @@ void flux(int S, double *Left_bnd)
 				JcollL_newlist[id] = sign_collL;		
 //			}
 	} else {
+			if (z>Left_bnd[2]-dz) {
 			JL[2]++;
-			fprintf(fpposition,"%d %E\n",id,z);
+			//fprintf(fpposition,"%d %E\n",id,z);
 			if (vflag) {
 				vel_Jcoll[iVX] += 1.0;
 				vel_Jcoll[iVY+iV] += 1.0;
 				vel_Jcoll[iVZ+2*iV] += 1.0;
+			};
 			};
 //			JcollL_newlist[id] = 0;		
 		}
@@ -112,6 +117,7 @@ void flux(int S, double *Left_bnd)
 					JcondL_newlist[id] = sign_condL;
 //			}
 		} else {
+			if (z>Left_bnd[0]-dz) {
 			if (indices[id] == -1) { //flag[pos_flag+1] == -1) {
 				JL[0]++; // old sign /= new sign
 				if (vflag) {
@@ -120,6 +126,7 @@ void flux(int S, double *Left_bnd)
 					vel_Jcond[iVZ+2*iV] += 1.0;
 				};
 //				JcondL_newlist[id] = 0;
+			};
 			};
 		}
 	} else if (z >= Left_bnd[0]) {
