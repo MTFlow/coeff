@@ -73,6 +73,10 @@ FILE *screen = stdout;
 FILE *error = stderr;
 FILE *fpdatvel = NULL;
 FILE *fpposition = NULL;
+FILE *fpcond = NULL;
+FILE *fpcoll = NULL;
+FILE *fpout = NULL;
+FILE *fpevap = NULL;
 
 int NATOMS,SBYTES;
 

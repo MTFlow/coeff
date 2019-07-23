@@ -19,6 +19,8 @@ void flux(int S, double *Left_bnd)
 //	sign_evapL = (z > Left_bnd[1]) - 2; // sign
 	sign_condL = (z > Left_bnd[0]) - 2; // sign
 
+	if (z>Left_bnd[0]-20 && z<Left_bnd[1]+20) fprintf(fpposition,"%d %E\n",id,z);
+
 
 	if (vflag) {
 		double VX = buf[ivx+size_one*S];
@@ -42,8 +44,9 @@ void flux(int S, double *Left_bnd)
 //			}
 		} else {
 //		if (JoutL_oldlist[id] != sign_outL) {
-				if (z < Left_bnd[3]+dz) {
+				if (z < (Left_bnd[3]+dz)) {
 				JL[3]++;
+				fprintf(fpout,"%d\n",id);
 				if (vflag) {
 					vel_Jout[iVX] += 1.0;
 					vel_Jout[iVY+iV] += 1.0;
@@ -52,6 +55,7 @@ void flux(int S, double *Left_bnd)
 //				JoutL_newlist[id] = 0;		
 				if (indices[id] == -2) { //flag[pos_flag+1] == -2) {
 					JL[1]++; // old sign /= new sign
+					fprintf(fpevap,"%d\n",id);
 					if (vflag) {
 						vel_Jevap[iVX] += 1.0;
 						vel_Jevap[iVY+iV] += 1.0;
@@ -93,8 +97,9 @@ void flux(int S, double *Left_bnd)
 				JcollL_newlist[id] = sign_collL;		
 //			}
 	} else {
-			if (z>Left_bnd[2]-dz) {
+			if (z>(Left_bnd[2]-dz)) {
 			JL[2]++;
+			fprintf(fpcoll,"%d\n",id);
 			//fprintf(fpposition,"%d %E\n",id,z);
 			if (vflag) {
 				vel_Jcoll[iVX] += 1.0;
@@ -117,9 +122,10 @@ void flux(int S, double *Left_bnd)
 					JcondL_newlist[id] = sign_condL;
 //			}
 		} else {
-			if (z>Left_bnd[0]-dz) {
+			if (z>(Left_bnd[0]-dz)) {
 			if (indices[id] == -1) { //flag[pos_flag+1] == -1) {
 				JL[0]++; // old sign /= new sign
+				fprintf(fpcond,"%d\n",id);
 				if (vflag) {
 					vel_Jcond[iVX] += 1.0;
 					vel_Jcond[iVY+iV] += 1.0;

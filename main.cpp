@@ -422,6 +422,10 @@ int main(int narg, char **arg)
 	FILE *fpfluxtime = fopen(filename1,"w");
 
 	fpposition = fopen("position.txt","w");
+	fpcond = fopen("cond.txt","w");
+	fpcoll = fopen("coll.txt","w");
+	fpout = fopen("out.txt","w");
+	fpevap = fopen("evap.txt","w");
 
 	fprintf(screen,"Created output file(s):\n");
 	fprintf(screen,"> %s\n",filename);
@@ -548,10 +552,10 @@ int main(int narg, char **arg)
       fread(&size_one,sizeof(int),1,fp);
       fread(&nchunk,sizeof(int),1,fp);
 
-	
-			if (ntimestep <= start) {
+				
+			if (ntimestep == start) {
 				int rowID = 0;
-
+				
 				for (int i = 0; i < nchunk; i++) {
 					fread(&n,sizeof(int),1,fp);				
 
@@ -563,18 +567,18 @@ int main(int narg, char **arg)
 
 					fread(buf,sizeof(double),n,fp);
 				
-						for (int S = 0; S < n/size_one; S++) {
+//						for (int S = 0; S < n/size_one; S++) {
 
-							int row = buf[iid+size_one*S];
-							if (buf[iz+size_one*S] < Left_boundary[0]) indices[row] = -2; //liquid region
-							if (buf[iz+size_one*S] > Left_boundary[1]) indices[row] = -1; //vapor region
+//							int row = buf[iid+size_one*S];
+//							if (buf[iz+size_one*S] < Left_boundary[0]) indices[row] = -2; //liquid region
+//							if (buf[iz+size_one*S] > Left_boundary[1]) indices[row] = -1; //vapor region
 
-						};
+//						};
 
 				}; // end of chunk
 				
-			}	else if (ntimestep > start && ntimestep <= stop) { 
-			
+			}	else if (ntimestep >= start && ntimestep <= stop) { 
+				
 				int rowID = 0;
 
 				for (int i = 0; i < nchunk; i++) {
@@ -634,6 +638,21 @@ int main(int narg, char **arg)
 				};
 
 //				};
+			}	else if (ntimestep < start) { 
+			
+
+				for (int i = 0; i < nchunk; i++) {
+					fread(&n,sizeof(int),1,fp);
+
+					if (n > maxbuf) {
+						if (buf) delete [] buf;
+						buf = new double[n];
+						maxbuf = n;
+					}
+
+					fread(buf,sizeof(double),n,fp);	
+
+				}; //end of chunk
 
 			} else {
 
@@ -709,6 +728,10 @@ int main(int narg, char **arg)
 	fclose(fpdatcoeff);
 	fclose(fpfluxtime);
 	fclose(fpposition);
+	fclose(fpcoll);
+	fclose(fpcond);
+	fclose(fpout);
+	fclose(fpevap);
 
 	return 0;
 
