@@ -227,7 +227,7 @@ int main(int narg, char **arg)
 
 
 	if (data==1) {
-		imass=0; imol=1; iid=2; itype=3; ix=4; iy=5; iz=6; ivx=7; ivy=8; ivz=9; ike=10; ipe=11; is1=12; is2=13; is3=14; is4=15; is5=16; is6=17;
+		imass=0; imol=1; iid=2; itype=3; ix=4; iy=5; iz=6; ivx=7; ivy=8; ivz=9; ike=10; ipe=11; is1=12; is2=13; is3=14; is4=15; is5=16; is6=17; ientrp=18;
 	} else if (data==2) {
 		imass=0; iid=1; ix=2; iy=3; iz=4;
 	} else {
@@ -394,7 +394,11 @@ int main(int narg, char **arg)
 	JcondL_oldlist = new int[SBYTES];	JcondL_newlist = new int[SBYTES];
 	JcollL_oldlist = new int[SBYTES];	JcollL_newlist = new int[SBYTES];
 	JoutL_oldlist  = new int[SBYTES];	JoutL_newlist  = new int[SBYTES];
+	
+	data_evap = new int[SBYTES];	
 
+	for (int ievap = 0; ievap < SBYTES; ievap++) data_evap[ievap] = 0;
+	
 	int MAX = 0;
 	double max_evap = 0.0;
 	int count_evap = 0;
@@ -703,6 +707,91 @@ int main(int narg, char **arg)
 		if (vflag) fclose(fpdatvel); // Close velocity distribution file
 
 	}; // end for loop LB_start
+
+
+	//export data of evaporated molecules
+
+	fprintf(screen,"\nEXPORT DATA	EVAPORATED MOLECULES TO FILE\n");
+
+	fseek(fp, 0,SEEK_SET);
+
+	FILE *fpevap1 = fopen("data_evaporated.txt","w");
+	
+
+	while(1) {
+
+		fread(&ntimestep,sizeof(bigint),1,fp);	
+	
+		if (feof(fp)) break;
+
+		if ((step%output_every)==0) fprintf(screen," " BIGINT_FORMAT, ntimestep);
+		fflush(stdout);		
+		step += step_size;
+			
+		fread(&natoms,sizeof(bigint),1,fp);		
+		fread(&triclinic,sizeof(int),1,fp);		
+		fread(&boundary[0][0],6*sizeof(int),1,fp);	
+    fread(&xlo,sizeof(double),1,fp);
+    fread(&xhi,sizeof(double),1,fp);
+ 	  fread(&ylo,sizeof(double),1,fp);
+    fread(&yhi,sizeof(double),1,fp);
+    fread(&zlo,sizeof(double),1,fp);
+    fread(&zhi,sizeof(double),1,fp);
+    if (triclinic) {
+			fread(&xy,sizeof(double),1,fp);
+			fread(&xz,sizeof(double),1,fp);
+			fread(&yz,sizeof(double),1,fp);
+    }
+    fread(&size_one,sizeof(int),1,fp);
+    fread(&nchunk,sizeof(int),1,fp);
+	
+		if (ntimestep >= start && ntimestep <= stop) {
+		
+		for (int i = 0; i < nchunk; i++) {
+			fread(&n,sizeof(int),1,fp);				
+
+			if (n > maxbuf) {
+				if (buf) delete [] buf;
+				buf = new double[n];
+				maxbuf = n;
+			}
+
+			fread(buf,sizeof(double),n,fp);
+				
+			for (int S = 0; S < n/size_one; S++) {
+			  int ID = buf[iid+size_one*S];	
+				if (data_evap[ID]==1) { 
+					fprintf(fpevap1,"%E %E %E %E %E %E",buf[iz+size_one*S],buf[ipe+size_one*S],buf[ientrp+size_one*S],buf[ivx+size_one*S],buf[ivy+size_one*S],buf[ivz+size_one*S]);
+				};
+			};
+
+		};
+	
+
+		} else if (ntimestep > stop) {
+
+			break;
+
+		} else {
+
+			for (int i = 0; i < nchunk; i++) {
+				fread(&n,sizeof(int),1,fp);				
+
+				if (n > maxbuf) {
+					if (buf) delete [] buf;
+					buf = new double[n];
+					maxbuf = n;
+				}
+
+				fread(buf,sizeof(double),n,fp);
+
+			}; //end of chunk
+		};
+
+	};//end of while
+
+
+	fclose(fpevap1);
 
 
 	if (buf) delete [] buf;

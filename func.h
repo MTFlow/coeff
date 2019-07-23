@@ -55,6 +55,7 @@ void flux(int S, double *Left_bnd)
 //				JoutL_newlist[id] = 0;		
 				if (indices[id] == -2) { //flag[pos_flag+1] == -2) {
 					JL[1]++; // old sign /= new sign
+					data_evap[id] = 1;
 					fprintf(fpevap,"%d\n",id);
 					if (vflag) {
 						vel_Jevap[iVX] += 1.0;
