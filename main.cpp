@@ -716,7 +716,7 @@ int main(int narg, char **arg)
 	fseek(fp, 0,SEEK_SET);
 
 	FILE *fpevap1 = fopen("data_evaporated.txt","w");
-	
+	step = 0;	
 
 	while(1) {
 
